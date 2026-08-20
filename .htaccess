@@ -32,6 +32,7 @@ Options -Indexes
     # Prevent direct browser navigation/access to JS files if no local referer
     RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?localhost [NC]
     RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?127\.0\.0\.1 [NC]
+    RewriteCond %{HTTP_REFERER} !^http(s)?://.*\.github\.io [NC]
     RewriteCond %{REQUEST_URI} \.(js|css)$ [NC]
     RewriteRule ^(.*)$ index.html [R=302,L]
 

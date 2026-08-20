@@ -6,5 +6,6 @@ Options -Indexes
     RewriteEngine On
     RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?localhost [NC]
     RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?127\.0\.0\.1 [NC]
+    RewriteCond %{HTTP_REFERER} !^http(s)?://.*\.github\.io [NC]
     RewriteRule \.js$ /inote/index.html [R=302,L]
 </IfModule>

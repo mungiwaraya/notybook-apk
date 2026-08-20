@@ -1,0 +1,27 @@
+{
+  "name": "notybook",
+  "version": "1.0.0",
+  "description": "Notybook - Luxury Dark Minimalist Encrypted Notes",
+  "main": "index.html",
+  "scripts": {
+    "prepare-assets": "node build-assets.js",
+    "build": "npm run prepare-assets && cap sync android",
+    "cap:sync": "cap sync",
+    "cap:open": "cap open android"
+  },
+  "keywords": [
+    "notes",
+    "encrypted",
+    "privacy",
+    "minimalist",
+    "notybook",
+    "offline"
+  ],
+  "author": "Notybook",
+  "license": "MIT",
+  "devDependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/cli": "^6.2.0",
+    "@capacitor/core": "^6.2.0"
+  }
+}
