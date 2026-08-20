@@ -1545,20 +1545,66 @@
                 folders: localStorage.getItem('inote_folders')
             };
 
-            var blob = new Blob([JSON.stringify(backupObj, null, 2)], { type: 'application/json' });
+            var dateTag = new Date().toISOString().slice(0, 10);
+            var filename = 'notybook_backup_' + dateTag + '.json';
+            var jsonStr = JSON.stringify(backupObj, null, 2);
+
+            // 1. File System Access API (Opens native Folder & File Location Picker)
+            if (typeof window.showSaveFilePicker === 'function') {
+                try {
+                    var handle = await window.showSaveFilePicker({
+                        suggestedName: filename,
+                        types: [{
+                            description: 'Notybook Encrypted Backup (.json)',
+                            accept: { 'application/json': ['.json'] }
+                        }]
+                    });
+                    var writable = await handle.createWritable();
+                    await writable.write(jsonStr);
+                    await writable.close();
+                    showToast('📁 Backup Saved to Selected Folder!');
+                    return;
+                } catch(pickerErr) {
+                    if (pickerErr.name === 'AbortError') return; // User cancelled
+                }
+            }
+
+            // 2. Web Share API with File (Native Android Save to Files / Folder Chooser Dialog)
+            if (typeof navigator !== 'undefined' && navigator.share && typeof File !== 'undefined') {
+                try {
+                    var backupFile = new File([jsonStr], filename, { type: 'application/json' });
+                    var canShare = !navigator.canShare || navigator.canShare({ files: [backupFile] });
+                    if (canShare) {
+                        await navigator.share({
+                            title: 'Notybook Backup',
+                            text: 'Notybook Encrypted Backup (' + dateTag + ')',
+                            files: [backupFile]
+                        });
+                        showToast('📁 Backup Exported Successfully!');
+                        return;
+                    }
+                } catch(shareErr) {
+                    if (shareErr.name === 'AbortError') return; // User cancelled
+                }
+            }
+
+            // 3. Fallback: Browser Blob / Data URI Download Anchor
+            var blob = new Blob([jsonStr], { type: 'application/json' });
             var url = URL.createObjectURL(blob);
             var a = document.createElement('a');
-            var dateTag = new Date().toISOString().slice(0, 10);
             a.href = url;
-            a.download = 'notybook_backup_' + dateTag + '.json';
+            a.download = filename;
             document.body.appendChild(a);
             a.click();
-            a.remove();
-            URL.revokeObjectURL(url);
+            setTimeout(function() {
+                a.remove();
+                URL.revokeObjectURL(url);
+            }, 300);
 
-            showToast('📦 Backup Saved Successfully!');
+            showToast('📦 Backup File Downloaded!');
         } catch(e) {
-            showToast('❌ Backup Export Failed');
+            console.error('Backup error:', e);
+            showToast('❌ Backup Export Failed: ' + (e.message || e));
         }
     }
 
