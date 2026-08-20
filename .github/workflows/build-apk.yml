@@ -7,6 +7,9 @@ on:
       - master
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Build Android APK
@@ -16,13 +19,13 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 20
+      - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Setup Java JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: '17'
@@ -67,3 +70,26 @@ jobs:
           name: Notybook-Android-App
           path: release-apk/Notybook.apk
           retention-days: 30
+
+      - name: Publish Direct 1-Click Download Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.0
+          name: Notybook App v1.0.0 (Direct APK)
+          body: |
+            ## 📱 Notybook Android App Direct Download
+            
+            Click below to download the latest **Notybook.apk** directly to your phone:
+            
+            - 🚀 **[Download Notybook.apk](https://github.com/mungiwaraya/notybook-apk/releases/download/v1.0.0/Notybook.apk)**
+            
+            ### ✨ Features:
+            - 🔒 Military-grade AES-256 local encrypted notes.
+            - ⚡ 100% Offline with zero internet required.
+            - 🎨 12 Luxury Typography Fonts & Dark Theme.
+            - 📂 Folder organization, search & export backup.
+          files: |
+            release-apk/Notybook.apk
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
