@@ -137,7 +137,8 @@ if (fs.existsSync(buildGradlePath)) {
 `;
 
     if (!buildGradle.includes('signingConfigs {')) {
-        buildGradle = buildGradle.replace(/buildTypes\s*\{[\s\S]*?\}/, signingConfigBlock);
+        // Match full nested buildTypes { ... } block (closing both release and buildTypes)
+        buildGradle = buildGradle.replace(/buildTypes\s*\{[\s\S]*?\}\s*\}/, signingConfigBlock.trim());
         fs.writeFileSync(buildGradlePath, buildGradle, 'utf8');
         console.log('  ✓ Injected persistent signing config into app/build.gradle');
     }
