@@ -1549,46 +1549,14 @@
             var filename = 'notybook_backup_' + dateTag + '.json';
             var jsonStr = JSON.stringify(backupObj, null, 2);
 
-            // 1. File System Access API (Opens native Folder & File Location Picker)
-            if (typeof window.showSaveFilePicker === 'function') {
-                try {
-                    var handle = await window.showSaveFilePicker({
-                        suggestedName: filename,
-                        types: [{
-                            description: 'Notybook Encrypted Backup (.json)',
-                            accept: { 'application/json': ['.json'] }
-                        }]
-                    });
-                    var writable = await handle.createWritable();
-                    await writable.write(jsonStr);
-                    await writable.close();
-                    showToast('📁 Backup Saved to Selected Folder!');
-                    return;
-                } catch(pickerErr) {
-                    if (pickerErr.name === 'AbortError') return; // User cancelled
-                }
+            // 1. Android APK Native Bridge -> Direct 1-Click Save to Downloads (Zero prompts)
+            if (typeof window !== 'undefined' && window.NotybookNative && typeof window.NotybookNative.saveBackupToDownloads === 'function') {
+                window.NotybookNative.saveBackupToDownloads(filename, jsonStr);
+                showToast('📥 Backup Saved to Downloads: ' + filename);
+                return;
             }
 
-            // 2. Web Share API with File (Native Android Save to Files / Folder Chooser Dialog)
-            if (typeof navigator !== 'undefined' && navigator.share && typeof File !== 'undefined') {
-                try {
-                    var backupFile = new File([jsonStr], filename, { type: 'application/json' });
-                    var canShare = !navigator.canShare || navigator.canShare({ files: [backupFile] });
-                    if (canShare) {
-                        await navigator.share({
-                            title: 'Notybook Backup',
-                            text: 'Notybook Encrypted Backup (' + dateTag + ')',
-                            files: [backupFile]
-                        });
-                        showToast('📁 Backup Exported Successfully!');
-                        return;
-                    }
-                } catch(shareErr) {
-                    if (shareErr.name === 'AbortError') return; // User cancelled
-                }
-            }
-
-            // 3. Fallback: Browser Blob / Data URI Download Anchor
+            // 2. Standard Browser 1-Click Download Anchor
             var blob = new Blob([jsonStr], { type: 'application/json' });
             var url = URL.createObjectURL(blob);
             var a = document.createElement('a');
@@ -1601,7 +1569,7 @@
                 URL.revokeObjectURL(url);
             }, 300);
 
-            showToast('📦 Backup File Downloaded!');
+            showToast('📥 Backup Saved to Downloads: ' + filename);
         } catch(e) {
             console.error('Backup error:', e);
             showToast('❌ Backup Export Failed: ' + (e.message || e));

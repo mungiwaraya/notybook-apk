@@ -45,6 +45,7 @@ jobs:
         run: |
           npx cap add android || true
           npx cap sync android
+          node configure-android.js
 
       - name: Ensure Executable Gradle Wrapper
         run: |
