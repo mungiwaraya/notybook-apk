@@ -345,7 +345,20 @@
                             <span class="inote-brand-icon">${getIconSvg('journal-outline')}</span>
                             <span class="inote-logo-title">Notybook</span>
                         </div>
-                        <button class="inote-icon-btn" id="btn-add-folder" title="New Folder">${getIconSvg('add-outline')}</button>
+                        <div class="sidebar-header-actions">
+                            <button class="inote-icon-btn" id="btn-add-folder" title="New Folder">${getIconSvg('add-outline')}</button>
+                            <div class="inote-menu-wrapper">
+                                <button class="inote-icon-btn" id="btn-sidebar-more-options" title="More Options">${getIconSvg('ellipsis-horizontal-outline')}</button>
+                                <div class="inote-dropdown-menu" id="inote-sidebar-dropdown">
+                                    <div class="menu-item" id="sidebar-menu-add-folder">${getIconSvg('add-outline')} New Folder</div>
+                                    <div class="menu-divider"></div>
+                                    <div class="menu-item" id="sidebar-menu-backup">${getIconSvg('download-outline')} Backup Data</div>
+                                    <div class="menu-item" id="sidebar-menu-restore">${getIconSvg('cloud-upload-outline')} Restore Backup</div>
+                                    <div class="menu-item" id="sidebar-menu-password">${getIconSvg('key-outline')} Change Password</div>
+                                    <div class="menu-item" id="sidebar-menu-lock">${getIconSvg('lock-closed-outline')} Lock App</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="inote-folder-list" id="inote-folder-list"></div>
                 </div>
@@ -363,6 +376,23 @@
                         <div class="notes-header-actions">
                             <button class="inote-action-btn danger" id="btn-empty-trash" title="Empty Trash" style="display:none;">${getIconSvg('trash-bin-outline')} Empty</button>
                             <button class="inote-action-btn" id="btn-new-note" title="New Note">${getIconSvg('create-outline')}</button>
+                            <div class="inote-menu-wrapper">
+                                <button class="inote-action-btn" id="btn-notes-more-options" title="More Options">${getIconSvg('ellipsis-horizontal-outline')}</button>
+                                <div class="inote-dropdown-menu" id="inote-notes-dropdown">
+                                    <div class="menu-item" id="notes-menu-new-note">${getIconSvg('create-outline')} New Note</div>
+                                    <div class="menu-item" id="notes-menu-restore-note" style="display:none;">${getIconSvg('refresh-outline')} Restore Note</div>
+                                    <div class="menu-item" id="notes-menu-move-note">${getIconSvg('folder-open-outline')} Move to Folder</div>
+                                    <div class="menu-item" id="notes-menu-toggle-pin">📌 Toggle Pin</div>
+                                    <div class="menu-item" id="notes-menu-clear-note">${getIconSvg('sparkles-outline')} Clear Content</div>
+                                    <div class="menu-item danger" id="notes-menu-delete-note">${getIconSvg('trash-outline')} Delete Note</div>
+                                    <div class="menu-item danger" id="notes-menu-empty-trash" style="display:none;">${getIconSvg('trash-bin-outline')} Empty Trash</div>
+                                    <div class="menu-divider"></div>
+                                    <div class="menu-item" id="notes-menu-backup">${getIconSvg('download-outline')} Backup Data</div>
+                                    <div class="menu-item" id="notes-menu-restore">${getIconSvg('cloud-upload-outline')} Restore Backup</div>
+                                    <div class="menu-item" id="notes-menu-password">${getIconSvg('key-outline')} Change Password</div>
+                                    <div class="menu-item" id="notes-menu-lock">${getIconSvg('lock-closed-outline')} Lock App</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="inote-notes-list" id="inote-notes-list"></div>
@@ -491,6 +521,11 @@
             emptyTrashBtn.style.display = (isTrashFolder && trashCount > 0) ? 'inline-flex' : 'none';
         }
 
+        var notesMenuEmptyTrash = document.getElementById('notes-menu-empty-trash');
+        if (notesMenuEmptyTrash) {
+            notesMenuEmptyTrash.style.display = (isTrashFolder && trashCount > 0) ? 'flex' : 'none';
+        }
+
         var pinBtn = document.getElementById('btn-pin-note');
         var restoreBtn = document.getElementById('btn-restore-note');
         var moveBtn = document.getElementById('btn-move-note');
@@ -500,6 +535,13 @@
         var menuMove = document.getElementById('menu-move-note');
         var menuPin = document.getElementById('menu-toggle-pin');
         var menuDelete = document.getElementById('menu-delete-note');
+        var menuClear = document.getElementById('menu-clear-note');
+
+        var notesMenuRestore = document.getElementById('notes-menu-restore-note');
+        var notesMenuMove = document.getElementById('notes-menu-move-note');
+        var notesMenuPin = document.getElementById('notes-menu-toggle-pin');
+        var notesMenuClear = document.getElementById('notes-menu-clear-note');
+        var notesMenuDelete = document.getElementById('notes-menu-delete-note');
 
         if (restoreBtn) restoreBtn.style.display = isTrash ? 'inline-flex' : 'none';
         if (moveBtn) moveBtn.style.display = isTrash ? 'none' : 'inline-flex';
@@ -508,6 +550,20 @@
         if (menuRestore) menuRestore.style.display = isTrash ? 'flex' : 'none';
         if (menuMove) menuMove.style.display = isTrash ? 'none' : 'flex';
         if (menuPin) menuPin.style.display = isTrash ? 'none' : 'flex';
+
+        if (notesMenuRestore) notesMenuRestore.style.display = (activeNote && isTrash) ? 'flex' : 'none';
+        if (notesMenuMove) notesMenuMove.style.display = (activeNote && !isTrash) ? 'flex' : 'none';
+        if (notesMenuPin) {
+            notesMenuPin.style.display = (activeNote && !isTrash) ? 'flex' : 'none';
+            if (activeNote) {
+                notesMenuPin.innerHTML = activeNote.pinned ? '📌 Unpin Note' : '📌 Pin Note';
+            }
+        }
+        if (notesMenuClear) notesMenuClear.style.display = activeNote ? 'flex' : 'none';
+        if (notesMenuDelete) {
+            notesMenuDelete.style.display = activeNote ? 'flex' : 'none';
+            notesMenuDelete.innerHTML = isTrash ? getIconSvg('trash-outline') + ' Delete Permanently' : getIconSvg('trash-outline') + ' Delete Note';
+        }
 
         if (pinBtn && activeNote) {
             pinBtn.classList.toggle('active', !!activeNote.pinned);
@@ -1096,14 +1152,30 @@
             if (e.target.closest('#btn-pin-note')) { togglePinActiveNote(); return; }
             if (e.target.closest('#btn-delete-note')) { deleteActiveNote(); return; }
 
-            // More Options Dropdown Toggle (Three Dots •••)
+            // Sidebar More Options Dropdown Toggle
+            if (e.target.closest('#btn-sidebar-more-options')) {
+                var sDropdown = document.getElementById('inote-sidebar-dropdown');
+                var isSOpen = sDropdown && sDropdown.classList.contains('show');
+                closeAllPopovers();
+                if (sDropdown && !isSOpen) sDropdown.classList.add('show');
+                return;
+            }
+
+            // Notes List More Options Dropdown Toggle
+            if (e.target.closest('#btn-notes-more-options')) {
+                var nDropdown = document.getElementById('inote-notes-dropdown');
+                var isNOpen = nDropdown && nDropdown.classList.contains('show');
+                closeAllPopovers();
+                if (nDropdown && !isNOpen) nDropdown.classList.add('show');
+                return;
+            }
+
+            // Editor More Options Dropdown Toggle (Three Dots •••)
             if (e.target.closest('#btn-more-options')) {
-                state.showMoreMenu = !state.showMoreMenu;
-                state.showTextColorPicker = false;
-                state.showBgColorPicker = false;
-                var dropdown = document.getElementById('inote-more-dropdown');
-                if (dropdown) dropdown.classList.toggle('show', state.showMoreMenu);
-                updateUI();
+                var eDropdown = document.getElementById('inote-more-dropdown');
+                var isEOpen = eDropdown && eDropdown.classList.contains('show');
+                closeAllPopovers();
+                if (eDropdown && !isEOpen) eDropdown.classList.add('show');
                 return;
             }
 
@@ -1119,19 +1191,28 @@
             var menuItem = e.target.closest('.menu-item');
             if (menuItem) {
                 var menuId = menuItem.id;
-                state.showMoreMenu = false;
-                if (menuId === 'menu-restore-note') restoreActiveNote();
-                else if (menuId === 'menu-move-note') moveActiveNote();
-                else if (menuId === 'menu-toggle-pin') togglePinActiveNote();
+                closeAllPopovers();
+
+                // Note Actions
+                if (menuId === 'menu-restore-note' || menuId === 'notes-menu-restore-note') restoreActiveNote();
+                else if (menuId === 'menu-move-note' || menuId === 'notes-menu-move-note') moveActiveNote();
+                else if (menuId === 'menu-toggle-pin' || menuId === 'notes-menu-toggle-pin') togglePinActiveNote();
                 else if (menuId === 'menu-copy-text') copyActiveNoteText();
                 else if (menuId === 'menu-duplicate-note') duplicateActiveNote();
                 else if (menuId === 'menu-stats') showNoteStats();
-                else if (menuId === 'menu-backup-data') exportBackupFile();
-                else if (menuId === 'menu-restore-data') triggerRestoreBackup();
-                else if (menuId === 'menu-change-password') renderChangePasswordModal();
-                else if (menuId === 'menu-lock-app') lockApp();
-                else if (menuId === 'menu-clear-note') clearActiveNoteContent();
-                else if (menuId === 'menu-delete-note') deleteActiveNote();
+                else if (menuId === 'menu-clear-note' || menuId === 'notes-menu-clear-note') clearActiveNoteContent();
+                else if (menuId === 'menu-delete-note' || menuId === 'notes-menu-delete-note') deleteActiveNote();
+
+                // Folder & List Actions
+                else if (menuId === 'sidebar-menu-add-folder') addNewFolder();
+                else if (menuId === 'notes-menu-new-note') createNewNote();
+                else if (menuId === 'notes-menu-empty-trash') emptyTrash();
+
+                // Global App Actions (Backup / Restore / Password / Lock)
+                else if (menuId === 'menu-backup-data' || menuId === 'sidebar-menu-backup' || menuId === 'notes-menu-backup') exportBackupFile();
+                else if (menuId === 'menu-restore-data' || menuId === 'sidebar-menu-restore' || menuId === 'notes-menu-restore') triggerRestoreBackup();
+                else if (menuId === 'menu-change-password' || menuId === 'sidebar-menu-password' || menuId === 'notes-menu-password') renderChangePasswordModal();
+                else if (menuId === 'menu-lock-app' || menuId === 'sidebar-menu-lock' || menuId === 'notes-menu-lock') lockApp();
                 return;
             }
 
@@ -1192,7 +1273,7 @@
 
             // Close popovers on click outside — but NEVER call updateUI() here
             // (updateUI resets editor innerHTML which kills savedRange DOM nodes)
-            if (!e.target.closest('.color-picker-wrapper') && !e.target.closest('.inote-menu-wrapper') && !e.target.closest('.inote-format-bar') && !e.target.closest('.inote-toolbar')) {
+            if (!e.target.closest('.color-picker-wrapper') && !e.target.closest('.inote-menu-wrapper') && !e.target.closest('.inote-format-bar') && !e.target.closest('.inote-toolbar') && !e.target.closest('.inote-sidebar-header') && !e.target.closest('.inote-notes-header')) {
                 closeAllPopovers();
             }
         });
@@ -1272,8 +1353,10 @@
 
     function closeAllPopovers() {
         state.showMoreMenu = false;
-        var el = document.getElementById('inote-more-dropdown');
-        if (el) el.classList.remove('show');
+        var dropdowns = document.querySelectorAll('.inote-dropdown-menu');
+        for (var i = 0; i < dropdowns.length; i++) {
+            dropdowns[i].classList.remove('show');
+        }
     }
 
     function formatText(cmd, value) {
@@ -1883,16 +1966,17 @@
                 display: flex; flex-direction: column; flex-shrink: 0;
             }
             .inote-sidebar-header {
-                padding: 16px; display: flex; align-items: center; justify-content: space-between;
-                border-bottom: 1px solid #2e2e34;
+                padding: 14px 16px; display: flex; align-items: center; justify-content: space-between;
+                border-bottom: 1px solid #2e2e34; position: relative; z-index: 100;
             }
+            .sidebar-header-actions { display: flex; align-items: center; gap: 4px; }
             .inote-brand { display: flex; align-items: center; gap: 8px; }
             .inote-brand-icon { font-size: 18px; }
             .inote-logo-title { font-weight: 700; font-size: 16px; color: #ffffff; letter-spacing: -0.3px; }
             .inote-icon-btn {
                 background: none; border: none; color: #e5c07b; cursor: pointer;
                 padding: 6px; border-radius: 6px; display: flex; align-items: center; justify-content: center;
-                transition: background 0.15s;
+                transition: background 0.15s; font-size: 18px; min-width: 32px; height: 32px;
             }
             .inote-icon-btn:hover { background: rgba(229,192,123,0.15); }
 
@@ -1962,14 +2046,17 @@
             }
             .inote-notes-header {
                 padding: 0 16px 10px 16px; display: flex; justify-content: space-between; align-items: center;
-                font-size: 13px; color: #8e8e93; font-weight: 600;
+                font-size: 13px; color: #8e8e93; font-weight: 600; position: relative; z-index: 100;
             }
+            .notes-header-actions { display: flex; align-items: center; gap: 4px; }
             .inote-action-btn {
-                background: none; border: none; color: #e5c07b; cursor: pointer; padding: 4px;
+                background: none; border: none; color: #e5c07b; cursor: pointer; padding: 6px;
                 display: flex; align-items: center; justify-content: center; border-radius: 6px;
-                transition: background 0.15s;
+                transition: background 0.15s; font-size: 18px; min-width: 32px; height: 32px;
             }
             .inote-action-btn:hover { background: rgba(229,192,123,0.15); }
+            .inote-action-btn.danger { color: #ff5555; font-size: 13px; font-weight: 600; padding: 4px 8px; gap: 4px; }
+            .inote-action-btn.danger:hover { background: rgba(255,85,85,0.15); }
 
             .inote-notes-list { flex: 1; overflow-y: auto; padding: 0 10px; }
             .inote-note-item {
@@ -2034,9 +2121,9 @@
             .inote-fmt-btn.active { background: #e5c07b !important; color: #1c1c1e !important; border-color: #e5c07b !important; font-weight: 800 !important; }
 
             /* Context Menu Dropdown */
-            .inote-menu-wrapper { position: relative; display: inline-block; }
+            .inote-menu-wrapper { position: relative; display: inline-flex; align-items: center; }
             .inote-dropdown-menu {
-                position: absolute; top: 42px; right: 0; left: auto; background: #28282e; border: 1px solid #383840;
+                position: absolute; top: calc(100% + 4px); right: 0; left: auto; background: #28282e; border: 1px solid #383840;
                 border-radius: 12px; min-width: 190px; max-width: calc(100vw - 24px); max-height: 80vh; overflow-y: auto; padding: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.6);
                 display: none; z-index: 10000;
             }
@@ -2191,7 +2278,7 @@
                 }
                 .inote-dropdown-menu {
                     position: absolute !important;
-                    top: 40px !important;
+                    top: calc(100% + 4px) !important;
                     right: 0 !important;
                     left: auto !important;
                     min-width: 200px;
@@ -2200,6 +2287,11 @@
                     overflow-y: auto !important;
                     z-index: 10000;
                     box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+                }
+                .inote-icon-btn, .inote-action-btn {
+                    min-width: 34px !important;
+                    height: 34px !important;
+                    font-size: 18px !important;
                 }
                 /* Mobile Formatting Bar: Clean 2-Row Symmetric Fixed Layout */
                 .inote-format-bar {

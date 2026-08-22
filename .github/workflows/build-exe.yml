@@ -1,0 +1,79 @@
+name: Build Notybook Windows EXE
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    name: Build Windows EXE & Installer
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install NPM Dependencies
+        run: npm install
+
+      - name: Bundle Web Assets to www/
+        run: npm run prepare-assets
+
+      - name: Build Windows Executables via Electron Builder
+        run: npx electron-builder --win nsis portable --x64
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Prepare Release Executables
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path release-exe
+          $setupExe = Get-ChildItem -Path "dist-electron" -Filter "*Setup*.exe" | Select-Object -First 1
+          if ($setupExe) {
+            Copy-Item -Path $setupExe.FullName -Destination "release-exe/Notybook-Setup.exe"
+          }
+          $portableExe = Get-ChildItem -Path "dist-electron" -Filter "*.exe" | Where-Object { $_.Name -notmatch "Setup" } | Select-Object -First 1
+          if ($portableExe) {
+            Copy-Item -Path $portableExe.FullName -Destination "release-exe/Notybook-Portable.exe"
+          }
+          Get-ChildItem -Path release-exe
+
+      - name: Upload Windows EXE Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Notybook-Windows-App
+          path: release-exe/*
+          retention-days: 30
+
+      - name: Publish Direct 1-Click Windows Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.0
+          name: Notybook App v1.0.0 (Direct APK & Windows EXE)
+          body: |
+            ## 🚀 Notybook Multi-Platform Releases
+            
+            ### 💻 Windows Desktop (.exe):
+            - 📦 **[Download Notybook-Setup.exe](https://github.com/mungiwaraya/notybook-apk/releases/download/v1.0.0/Notybook-Setup.exe)** (Installer for Windows 10/11)
+            - ⚡ **[Download Notybook-Portable.exe](https://github.com/mungiwaraya/notybook-apk/releases/download/v1.0.0/Notybook-Portable.exe)** (Direct Run Portable App)
+            
+            ### 📱 Android Mobile (.apk):
+            - 🚀 **[Download Notybook.apk](https://github.com/mungiwaraya/notybook-apk/releases/download/v1.0.0/Notybook.apk)**
+          files: |
+            release-exe/Notybook-Setup.exe
+            release-exe/Notybook-Portable.exe
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

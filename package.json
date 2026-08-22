@@ -2,12 +2,14 @@
   "name": "notybook",
   "version": "1.0.0",
   "description": "Notybook - Luxury Dark Minimalist Encrypted Notes",
-  "main": "index.html",
+  "main": "electron-main.js",
   "scripts": {
     "prepare-assets": "node build-assets.js",
     "build": "npm run prepare-assets && cap sync android",
     "cap:sync": "cap sync",
-    "cap:open": "cap open android"
+    "cap:open": "cap open android",
+    "electron:start": "npm run prepare-assets && electron .",
+    "build:exe": "npm run prepare-assets && electron-builder --win nsis portable --x64"
   },
   "keywords": [
     "notes",
@@ -23,5 +25,44 @@
     "@capacitor/android": "^6.2.0",
     "@capacitor/cli": "^6.2.0",
     "@capacitor/core": "^6.2.0"
+  },
+  "devDependencies": {
+    "electron": "^31.2.1",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.notybook.desktop",
+    "productName": "Notybook",
+    "copyright": "Copyright © 2026 Notybook",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "www/**/*",
+      "electron-main.js"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Notybook"
+    }
   }
 }
